@@ -1,4 +1,4 @@
-# terraria-k3s
+# lazy terraria server
 
 > TShock Terraria server on k3s, with a wake-on-connect proxy that scales the server to zero when nobody's playing.
 
@@ -98,7 +98,7 @@ Tuned via env vars on `deployment/terraria-proxy`:
 | `BACKEND_ADDR` | `terraria-backend.terraria.svc.cluster.local:7777` | Cluster-internal address it dials. |
 | `NAMESPACE` | `terraria` | Namespace of the target StatefulSet. |
 | `STATEFULSET` | `terraria` | StatefulSet to scale. |
-| `IDLE_TIMEOUT` | `5m` | Idle window before scaling to 0. |
+| `IDLE_TIMEOUT` | `10m` | Idle window before scaling to 0. |
 | `WAKE_TIMEOUT` | `120s` | How long to wait for the backend to accept TCP after scaling up. |
 | `CHECK_INTERVAL` | `30s` | How often the idle watcher runs. |
 

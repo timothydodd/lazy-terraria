@@ -4,7 +4,7 @@ metadata:
   name: terraria
   namespace: terraria
 spec:
-  serviceName: terraria-backend
+  serviceName: terraria
   replicas: 1
   selector:
     matchLabels:
