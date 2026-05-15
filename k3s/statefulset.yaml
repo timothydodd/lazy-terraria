@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: terraria
+  namespace: terraria
+spec:
+  serviceName: terraria-backend
+  replicas: 1
+  selector:
+    matchLabels:
+      app: terraria
+  template:
+    metadata:
+      labels:
+        app: terraria
+    spec:
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        # Seed sscconfig.json on first boot only. If the file already exists
+        # on the PVC, leave TShock's version alone so manual edits persist.
+        - name: seed-ssc-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              for f in sscconfig.json config.json; do
+                if [ ! -f "/tshock/$f" ]; then
+                  cp "/seed/$f" "/tshock/$f"
+                  echo "Seeded $f"
+                else
+                  echo "$f already exists, leaving it alone"
+                fi
+              done
+          volumeMounts:
+            - name: tshock-config
+              mountPath: /tshock
+            - name: serverconfig
+              mountPath: /seed
+              readOnly: true
+      containers:
+        - name: tshock
+          image: ghcr.io/pryaxis/tshock:stable
+          imagePullPolicy: IfNotPresent
+          stdin: true
+          tty: true
+          # The image entrypoint is fixed; these args are appended.
+          # -config drives initial world generation from serverconfig.txt.
+          args:
+            - -config
+            - /etc/terraria/serverconfig.txt
+          ports:
+            - containerPort: 7777
+              protocol: TCP
+              name: game
+            - containerPort: 7878
+              protocol: TCP
+              name: rest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          volumeMounts:
+            - name: worlds
+              mountPath: /worlds
+            - name: tshock-config
+              mountPath: /tshock
+            - name: plugins
+              mountPath: /plugins
+            - name: serverconfig
+              mountPath: /etc/terraria
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: 7777
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 7777
+            initialDelaySeconds: 180
+            periodSeconds: 30
+      volumes:
+        - name: worlds
+          persistentVolumeClaim:
+            claimName: terraria-worlds
+        - name: tshock-config
+          persistentVolumeClaim:
+            claimName: tshock-config
+        - name: plugins
+          persistentVolumeClaim:
+            claimName: tshock-plugins
+        - name: serverconfig
+          configMap:
+            name: terraria-config

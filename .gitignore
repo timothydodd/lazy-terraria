@@ -1,0 +1,30 @@
+# Go build artifacts
+proxy/proxy
+proxy/bin/
+*.exe
+*.test
+*.out
+
+# Docker / image exports
+*.tar
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local kube/secret material
+*.kubeconfig
+kubeconfig
+*.pem
+*.key
+secrets.yaml
+*.local.yaml
+
+# Local Terraria state (in case anyone runs the server outside the cluster)
+worlds/
+*.wld
+*.twld
+*.bak

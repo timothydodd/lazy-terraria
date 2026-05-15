@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terraria-config
+  namespace: terraria
+data:
+  # Used by TShock only for initial world autocreation. Most server settings
+  # (password, MOTD, max players, etc.) live in TShock's /tshock/config.json
+  # which is generated on first boot.
+  serverconfig.txt: |
+    world=/worlds/world.wld
+    worldpath=/worlds/
+    worldname=modo-world
+    autocreate=2
+    difficulty=1
+    maxplayers=8
+    port=7777
+    secure=1
+    language=en-US
+    upnp=0
+  config.json: |
+    {
+      "Settings": {
+        "RequireLogin": true,
+        "DisableLoginBeforeJoin": false
+      }
+    }
+  sscconfig.json: |
+    {
+      "Settings": {
+        "Enabled": true,
+        "ServerSideCharacterSave": 5,
+        "LogonDiscardThreshold": 0,
+        "StartingHealth": 100,
+        "StartingMana": 20,
+        "StartingInventory": [
+          { "netID": 4,   "stack": 1,   "prefix": 0 },
+          { "netID": 1,   "stack": 1,   "prefix": 0 },
+          { "netID": 10,  "stack": 1,   "prefix": 0 },
+          { "netID": 7,   "stack": 1,   "prefix": 0 },
+          { "netID": 50,  "stack": 1,   "prefix": 0 },
+          { "netID": 8,   "stack": 999, "prefix": 0 },
+          { "netID": 9,   "stack": 999, "prefix": 0 },
+          { "netID": 2,   "stack": 999, "prefix": 0 },
+          { "netID": 3,   "stack": 999, "prefix": 0 },
+          { "netID": 28,  "stack": 30,  "prefix": 0 },
+          { "netID": 110, "stack": 30,  "prefix": 0 }
+        ],
+        "WarnPlayersAboutBypassPermission": true,
+        "KeepPlayerAppearance": true
+      }
+    }

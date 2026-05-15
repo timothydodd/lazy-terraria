@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: terraria-proxy
+  namespace: terraria
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: terraria-proxy
+  namespace: terraria
+rules:
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets/scale"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: terraria-proxy
+  namespace: terraria
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: terraria-proxy
+subjects:
+  - kind: ServiceAccount
+    name: terraria-proxy
+    namespace: terraria
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terraria-proxy
+  namespace: terraria
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: terraria-proxy
+  template:
+    metadata:
+      labels:
+        app: terraria-proxy
+    spec:
+      serviceAccountName: terraria-proxy
+      containers:
+        - name: proxy
+          image: docker.io/timdoddcool/terraria-proxy:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7777
+              protocol: TCP
+              name: game
+          env:
+            - name: LISTEN_ADDR
+              value: ":7777"
+            - name: BACKEND_ADDR
+              value: "terraria-backend.terraria.svc.cluster.local:7777"
+            - name: NAMESPACE
+              value: "terraria"
+            - name: STATEFULSET
+              value: "terraria"
+            - name: IDLE_TIMEOUT
+              value: "5m"
+            - name: WAKE_TIMEOUT
+              value: "120s"
+            - name: CHECK_INTERVAL
+              value: "30s"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"

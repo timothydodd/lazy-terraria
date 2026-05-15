@@ -1,0 +1,53 @@
+---
+# Public LoadBalancer — clients connect here. Selects the wake-on-connect proxy
+# (not the TShock server), so the first connection attempt can wake a
+# scaled-to-zero server.
+apiVersion: v1
+kind: Service
+metadata:
+  name: terraria
+  namespace: terraria
+spec:
+  type: LoadBalancer
+  selector:
+    app: terraria-proxy
+  ports:
+    - name: game
+      port: 7777
+      targetPort: 7777
+      protocol: TCP
+---
+# Internal-only service the proxy dials. Points at the TShock pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: terraria-backend
+  namespace: terraria
+spec:
+  type: ClusterIP
+  selector:
+    app: terraria
+  ports:
+    - name: game
+      port: 7777
+      targetPort: 7777
+      protocol: TCP
+---
+# TShock REST API - cluster-internal only by default.
+# Switch type to LoadBalancer if you want to expose it externally,
+# but only after setting a strong ApplicationRestTokens entry in
+# /tshock/config.json.
+apiVersion: v1
+kind: Service
+metadata:
+  name: terraria-rest
+  namespace: terraria
+spec:
+  type: ClusterIP
+  selector:
+    app: terraria
+  ports:
+    - name: rest
+      port: 7878
+      targetPort: 7878
+      protocol: TCP
